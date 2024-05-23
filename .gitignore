@@ -25,3 +25,6 @@ replay_pid*
 
 #volumenes
 volumenes/
+
+##IntelliJ
+.idea/*

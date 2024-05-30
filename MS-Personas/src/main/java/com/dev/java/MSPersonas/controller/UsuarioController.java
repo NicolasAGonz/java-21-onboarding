@@ -19,9 +19,8 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
 
     @PostMapping("/validarUsuario")
-    public CompletableFuture<ResponseEntity<String>> validarUsuario(@RequestBody UsuarioDTO usuarioDTO) {
-        return usuarioService.validarUsuario(usuarioDTO)
-                .thenApply(ResponseEntity::ok)
-                .exceptionally(ex -> ResponseEntity.badRequest().body(ex.getMessage()));
+    public CompletableFuture<String> validarUsuario(@RequestBody UsuarioDTO usuarioDTO) {
+        return usuarioService.validarUsuario(usuarioDTO);
+
     }
 }

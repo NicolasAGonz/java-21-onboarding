@@ -1,3 +1,11 @@
 package com.dev.java.MSPersonas.dto;
 
-public record UsuarioDTO(String nombre, String apellido, String dni, int estadoId, int tipoId) {}
+import jakarta.validation.constraints.NotNull;
+
+public record UsuarioDTO(
+        @NotNull String nombre,
+        @NotNull String apellido,
+        @NotNull String dni,
+        @NotNull int estadoId,
+        @NotNull int tipoId
+) {}

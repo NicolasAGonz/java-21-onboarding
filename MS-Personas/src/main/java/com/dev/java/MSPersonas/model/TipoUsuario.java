@@ -12,7 +12,10 @@ import lombok.*;
 @AllArgsConstructor
 public class TipoUsuario {
     @Id
+    @Column(nullable = false)
     private int idtipo_usuario;
+
+    @Column(nullable = false)
     private String descripcion;
 
 }

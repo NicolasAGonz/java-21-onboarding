@@ -23,32 +23,43 @@ public class UsuarioService {
 
         return CompletableFuture.supplyAsync(() -> {
 
-            Optional<Usuario> existingUserOpt = usuarioRepository.findByDni(usuarioDTO.dni());
+            try {
+                Optional<Usuario> existingUserOpt = usuarioRepository.findByDni(usuarioDTO.dni());
 
-            if (existingUserOpt.isPresent()) {
-                Usuario existingUser = existingUserOpt.get();
-                String estadoDescripcion = existingUser.getEstadoUsuario().getDescripcion();
+                if (existingUserOpt.isPresent()) {
+                    Usuario existingUser = existingUserOpt.get();
+                    String estadoDescripcion = existingUser.getEstadoUsuario().getDescripcion();
 
-                switch (estadoDescripcion) {
-                    case "Activo":
-                        throw new IllegalArgumentException("El usuario ya está dado de alta.");
-                    case "Bloqueado":
-                        throw new IllegalArgumentException("El usuario está bloqueado.");
-                    case "Inactivo":
-                    case "Suspendido":
-                    case "Cancelado":
-                        // Reactivar el usuario
-                        existingUser.setEstadoUsuario(new EstadoUsuario(usuarioDTO.estadoId(), ""));
-                        existingUser.setNombre(usuarioDTO.nombre());
-                        existingUser.setApellido(usuarioDTO.apellido());
-                        usuarioRepository.save(existingUser);
-                        return "Usuario reactivado correctamente.";
-                    default:
-                        throw new IllegalArgumentException("Estado desconocido: " + estadoDescripcion);
+                    switch (estadoDescripcion) {
+                        case "Activo":
+                            throw new IllegalArgumentException("El usuario ya está dado de alta.");
+                        case "Bloqueado":
+                            throw new IllegalArgumentException("El usuario está bloqueado.");
+                        case "Inactivo":
+                        case "Suspendido":
+                        case "Cancelado":
+                            // Reactivar el usuario
+                            existingUser.setEstadoUsuario(new EstadoUsuario(usuarioDTO.estadoId(), ""));
+                            existingUser.setNombre(usuarioDTO.nombre());
+                            existingUser.setApellido(usuarioDTO.apellido());
+                            usuarioRepository.save(existingUser);
+                            return "Usuario reactivado correctamente.";
+                        default:
+                            throw new IllegalArgumentException("Estado desconocido: " + estadoDescripcion);
+                    }
+                } else {
+                    throw new IllegalArgumentException("El usuario no existe.");
                 }
-            } else {
-                throw new IllegalArgumentException("El usuario no existe.");
+            }catch (Exception e) {
+                    throw new RuntimeException("Error en el proceso de creación de usuario", e);
+                }
+
+        }).handle((result, ex) -> {
+            if (ex != null) {
+                return "Error creando usuario: " + ex.getCause().getMessage();
             }
+            return result;
+
         });
     }
 }

@@ -23,19 +23,33 @@ public class CuentaService {
 
     public CompletableFuture<String> crearCuenta(CrearCuentaDTO dto) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            CodigoMoneda moneda = codigoMonedaRepository.findById(dto.divisa()).orElseThrow(() -> new IllegalArgumentException("Codigo de moneda no encontrada"));
-            EstadoCuenta estado = estadoCuentaRepository.findById(dto.estado()).orElseThrow(() -> new IllegalArgumentException("Estado de cuenta no encontrado"));
+            return CompletableFuture.supplyAsync(() -> {
 
-            Cuenta cuenta = new Cuenta();
-            cuenta.setNumcue(dto.numcue());
-            cuenta.setPersnum(dto.persnum());
-            cuenta.setDivisa(moneda);
-            cuenta.setEstado(estado);
-            cuenta.setSaldo(dto.saldo());
+                try {
+                    CodigoMoneda moneda = codigoMonedaRepository.findById(dto.divisa())
+                            .orElseThrow(() -> new IllegalArgumentException("Codigo de moneda no encontrada"));
+                    EstadoCuenta estado = estadoCuentaRepository.findById(dto.estado())
+                            .orElseThrow(() -> new IllegalArgumentException("Estado de cuenta no encontrado"));
 
-            cuentaRepository.save(cuenta);
-            return "cuenta creada correctamente";
+                    Cuenta cuenta = new Cuenta();
+                    cuenta.setNumcue(dto.numcue());
+                    cuenta.setPersnum(dto.persnum());
+                    cuenta.setDivisa(moneda);
+                    cuenta.setEstado(estado);
+                    cuenta.setSaldo(dto.saldo());
+
+                    cuentaRepository.save(cuenta);
+                    return "cuenta creada correctamente";
+                } catch (Exception e) {
+                    throw new RuntimeException("Error en el proceso de creación de cuenta", e);
+                }
+
+            }).handle((result, ex) -> {
+                if (ex != null) {
+                    return "Error creando cuenta: " + ex.getCause().getMessage();
+                }
+                return result;
+
         });
     }
 }

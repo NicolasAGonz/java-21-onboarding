@@ -12,6 +12,8 @@ import lombok.*;
 public class EstadoUsuario {
     @Id
     private int idestado_usuario;
+
+    @Column(nullable = false)
     private String descripcion;
 
 }

@@ -3,7 +3,6 @@ package com.dev.java.MSCuentas.controller;
 import com.dev.java.MSCuentas.dto.CrearCuentaDTO;
 import com.dev.java.MSCuentas.service.CuentaService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

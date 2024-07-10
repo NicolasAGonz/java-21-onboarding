@@ -1,11 +1,13 @@
 package com.dev.java.MSPersonas.service;
 
 import com.dev.java.MSPersonas.dto.UsuarioDTO;
+import com.dev.java.MSPersonas.event.NewUserCreatedEvent;
 import com.dev.java.MSPersonas.model.EstadoUsuario;
 import com.dev.java.MSPersonas.model.TipoUsuario;
 import com.dev.java.MSPersonas.model.Usuario;
 import com.dev.java.MSPersonas.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -18,6 +20,7 @@ import java.util.concurrent.Executors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final KafkaTemplate kafkaTemplate;
 
     public CompletableFuture<String> validarUsuario(UsuarioDTO usuarioDTO) {
 
@@ -48,7 +51,12 @@ public class UsuarioService {
                             throw new IllegalArgumentException("Estado desconocido: " + estadoDescripcion);
                     }
                 } else {
-                    throw new IllegalArgumentException("El usuario no existe.");
+                    //TODO: create new user
+
+                    //TODO:Kafka notif
+                    kafkaTemplate.send("newUserCreatedTopic",new NewUserCreatedEvent("userData"));
+
+                    return "Usuario creado correctamente!";
                 }
             }catch (Exception e) {
                     throw new RuntimeException("Error en el proceso de creación de usuario", e);

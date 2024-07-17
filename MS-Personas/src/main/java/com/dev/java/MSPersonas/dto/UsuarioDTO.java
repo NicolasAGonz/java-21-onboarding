@@ -6,6 +6,7 @@ public record UsuarioDTO(
         @NotNull String nombre,
         @NotNull String apellido,
         @NotNull String dni,
-        @NotNull int estadoId,
-        @NotNull int tipoId
+        @NotNull int tipoId,
+        @NotNull DomicilioDTO domicilio,
+        @NotNull int sueldo
 ) {}

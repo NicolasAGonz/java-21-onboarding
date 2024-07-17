@@ -1,18 +1,15 @@
 package com.dev.java.MSPersonas.service;
 
 import com.dev.java.MSPersonas.dto.UsuarioDTO;
-import com.dev.java.MSPersonas.event.NewUserCreatedEvent;
 import com.dev.java.MSPersonas.model.EstadoUsuario;
-import com.dev.java.MSPersonas.model.TipoUsuario;
 import com.dev.java.MSPersonas.model.Usuario;
+import com.dev.java.MSPersonas.repository.DomicilioRepository;
 import com.dev.java.MSPersonas.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 @Service
@@ -20,54 +17,74 @@ import java.util.concurrent.Executors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final DomicilioRepository domicilioRepository;
     private final KafkaTemplate kafkaTemplate;
 
-    public CompletableFuture<String> validarUsuario(UsuarioDTO usuarioDTO) {
+    public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
 
-        return CompletableFuture.supplyAsync(() -> {
+        // 1. Abrir un nuevo thread
+        // 2. Validar la existencia del usuario
+        // 3. Si no existe, crearlo
+        // 4. Disparar el mensaje a los otros servicios
 
-            try {
-                Optional<Usuario> existingUserOpt = usuarioRepository.findByDni(usuarioDTO.dni());
+        try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 
-                if (existingUserOpt.isPresent()) {
-                    Usuario existingUser = existingUserOpt.get();
-                    String estadoDescripcion = existingUser.getEstadoUsuario().getDescripcion();
+            Callable<Usuario> userCreationTask = createUserTask(usuarioDTO, usuarioRepository );
 
-                    switch (estadoDescripcion) {
-                        case "Activo":
-                            throw new IllegalArgumentException("El usuario ya está dado de alta.");
-                        case "Bloqueado":
-                            throw new IllegalArgumentException("El usuario está bloqueado.");
-                        case "Inactivo":
-                        case "Suspendido":
-                        case "Cancelado":
-                            // Reactivar el usuario
-                            existingUser.setEstadoUsuario(new EstadoUsuario(usuarioDTO.estadoId(), ""));
-                            existingUser.setNombre(usuarioDTO.nombre());
-                            existingUser.setApellido(usuarioDTO.apellido());
-                            usuarioRepository.save(existingUser);
-                            return "Usuario reactivado correctamente.";
-                        default:
-                            throw new IllegalArgumentException("Estado desconocido: " + estadoDescripcion);
-                    }
-                } else {
-                    //TODO: create new user
+            Future<?> newUserFuture = executorService.submit(userCreationTask); //end of submit
 
-                    //TODO:Kafka notif
-                    kafkaTemplate.send("newUserCreatedTopic",new NewUserCreatedEvent("userData"));
+        // <ALGO> nuevoUsuario = newUserFuture.get();
+        // return nuevoUsuario;
+        } //END OF TRY
 
-                    return "Usuario creado correctamente!";
-                }
-            }catch (Exception e) {
-                    throw new RuntimeException("Error en el proceso de creación de usuario", e);
-                }
-
-        }).handle((result, ex) -> {
-            if (ex != null) {
-                return "Error creando usuario: " + ex.getCause().getMessage();
-            }
-            return result;
-
-        });
+        return null;
     }
+
+
+
+
+    public static Callable<Usuario> createUserTask (UsuarioDTO usuarioDTO, UsuarioRepository usuarioRepository) {
+
+        return () -> {
+
+            Optional<Usuario> existingUserOpt = usuarioRepository.findByDni(usuarioDTO.dni());
+
+            if (existingUserOpt.isPresent()) {
+                Usuario existingUser = existingUserOpt.get();
+                String estadoDescripcion = existingUser.getEstadoUsuario().getDescripcion();
+
+                switch (estadoDescripcion) {
+                    case "Activo":
+                        throw new IllegalArgumentException("El usuario ya está dado de alta.");
+                    case "Bloqueado":
+                        throw new IllegalArgumentException("El usuario está bloqueado.");
+                    case "Inactivo":
+                        throw new IllegalArgumentException("El usuario está Inactivo.");
+                    case "Suspendido":
+                        throw new IllegalArgumentException("El usuario está Suspendido.");
+                    case "Cancelado":
+                        // Reactivar el usuario
+                        existingUser.setEstadoUsuario(new EstadoUsuario(1, "Activo"));
+                        existingUser.setNombre(usuarioDTO.nombre());
+                        existingUser.setApellido(usuarioDTO.apellido());
+                        usuarioRepository.save(existingUser);
+                        return existingUser;
+                    default:
+                        throw new IllegalArgumentException("Estado desconocido: " + estadoDescripcion);
+                }
+            } else {
+                //TODO: create new user
+                Usuario nuevoUsuario;
+
+                //TODO:Kafka notif
+                //kafkaTemplate.send("newUserCreatedTopic", new NewUserCreatedEvent("userData"));
+
+                return nuevoUsuario;
+            }
+        };
+    }
+
 }
+
+
+

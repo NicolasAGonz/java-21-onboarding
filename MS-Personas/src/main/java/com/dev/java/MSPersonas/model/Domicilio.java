@@ -16,9 +16,8 @@ public class Domicilio implements Serializable {
     @Column(nullable = false)
     private int iddomicilio;
 
-    @ManyToOne
     @JoinColumn(name = "persnum", nullable = false)
-    private Usuario usuario;
+    private int persnum;
 
     @Column(nullable = false)
     private String calle;

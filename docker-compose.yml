@@ -32,7 +32,6 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-
   mariadb:
     image: mariadb:latest
     command: --default-authentication-plugin=ey%2024#database
@@ -61,6 +60,21 @@ services:
     volumes:
         - ./volumenes/mongodb_data:/data/db
         - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8181:8080" ## http://localhost:8181/...
+    expose:
+      - "8181"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+
 volumes:
   mariadb_data:
   mongodb_data:

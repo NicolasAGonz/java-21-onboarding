@@ -31,13 +31,17 @@ public class UsuarioService {
 
             Callable<Usuario> userCreationTask = createUserTask(usuarioDTO, usuarioRepository );
 
-            Future<?> newUserFuture = executorService.submit(userCreationTask); //end of submit
+            Future<Usuario> newUserFuture = executorService.submit(userCreationTask); //end of submit
 
-        // <ALGO> nuevoUsuario = newUserFuture.get();
-        // return nuevoUsuario;
+            Usuario nuevoUsuario = newUserFuture.get();
+
+            return nuevoUsuario;
         } //END OF TRY
-
-        return null;
+        catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -73,8 +77,17 @@ public class UsuarioService {
                         throw new IllegalArgumentException("Estado desconocido: " + estadoDescripcion);
                 }
             } else {
-                //TODO: create new user
-                Usuario nuevoUsuario;
+
+                Usuario nuevoUsuario = Usuario.builder()
+                        .nombre(usuarioDTO.nombre())
+                        .apellido(usuarioDTO.apellido())
+                        .dni(usuarioDTO.dni())
+                        .estadoUsuario(new EstadoUsuario(1, "Activo"))
+                        .tipoUsuario(usuarioDTO.tipoUsuario())
+                        .build();
+
+                usuarioRepository.save(nuevoUsuario);
+
 
                 //TODO:Kafka notif
                 //kafkaTemplate.send("newUserCreatedTopic", new NewUserCreatedEvent("userData"));

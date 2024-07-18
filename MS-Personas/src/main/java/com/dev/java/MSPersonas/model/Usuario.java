@@ -9,6 +9,7 @@ import java.io.Serializable;
 @Table(name = "usuarios")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Usuario implements Serializable {
@@ -25,12 +26,11 @@ public class Usuario implements Serializable {
     private String dni;
 
     @ManyToOne
-    @JoinColumn(name = "estado", nullable = false)
+    @JoinColumn(name = "estado", referencedColumnName = "idestado_usuario",nullable = false)
     private EstadoUsuario estadoUsuario;
 
     @ManyToOne
-    @JoinColumn(name = "tipo", nullable = false)
+    @JoinColumn(name = "tipo", referencedColumnName = "idtipo_usuario",nullable = false)
     private TipoUsuario tipoUsuario;
 
-    // Getters y Setters
 }

@@ -8,6 +8,7 @@ import com.dev.java.MSCuentas.repository.CodigoMonedaRepository;
 import com.dev.java.MSCuentas.repository.CuentaRepository;
 import com.dev.java.MSCuentas.repository.EstadoCuentaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +20,12 @@ public class CuentaService {
     private final CuentaRepository cuentaRepository;
     private final CodigoMonedaRepository codigoMonedaRepository;
     private final EstadoCuentaRepository estadoCuentaRepository;
+
+    @KafkaListener(topics = "healthCheckTopic", groupId = "group_id")
+    public void consume(String message) {
+        System.out.println("Consumed message: " + message);
+
+    }
 
 
     public CompletableFuture<String> crearCuenta(CrearCuentaDTO dto) {

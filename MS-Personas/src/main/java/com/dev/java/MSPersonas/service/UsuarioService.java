@@ -19,21 +19,16 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final DomicilioRepository domicilioRepository;
     private final KafkaTemplate kafkaTemplate;
+    private static final String newUserCreatedTopic = "newUserCreatedTopic";
 
     public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
-
-        // 1. Abrir un nuevo thread
-        // 2. Validar la existencia del usuario
-        // 3. Si no existe, crearlo
-        // 4. Disparar el mensaje a los otros servicios
-
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 
-            Callable<Usuario> userCreationTask = createUserTask(usuarioDTO, usuarioRepository );
-
+            Callable<Usuario> userCreationTask = createUserTask(usuarioDTO, usuarioRepository);
             Future<Usuario> newUserFuture = executorService.submit(userCreationTask); //end of submit
-
             Usuario nuevoUsuario = newUserFuture.get();
+
+            kafkaTemplate.send(newUserCreatedTopic, "NUEVO USUARIO CREADO");
 
             return nuevoUsuario;
         } //END OF TRY
@@ -43,9 +38,6 @@ public class UsuarioService {
             throw new RuntimeException(e);
         }
     }
-
-
-
 
     public static Callable<Usuario> createUserTask (UsuarioDTO usuarioDTO, UsuarioRepository usuarioRepository) {
 
@@ -87,10 +79,6 @@ public class UsuarioService {
                         .build();
 
                 usuarioRepository.save(nuevoUsuario);
-
-
-                //TODO:Kafka notif
-                //kafkaTemplate.send("newUserCreatedTopic", new NewUserCreatedEvent("userData"));
 
                 return nuevoUsuario;
             }

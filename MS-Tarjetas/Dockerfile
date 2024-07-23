@@ -19,7 +19,7 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy the Maven build output (JAR file) to the container
-COPY --from=build /app/target/api-gateway-0.0.1-SNAPSHOT.jar api-gateway-0.0.1-SNAPSHOT.jar
+COPY --from=build /app/target/MS-Tarjetas-0.0.1-SNAPSHOT.jar MS-Tarjetas-0.0.1-SNAPSHOT.jar
 
 # Run the Spring Boot application
-ENTRYPOINT ["java","-jar","api-gateway-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","MS-Tarjetas-0.0.1-SNAPSHOT.jar"]

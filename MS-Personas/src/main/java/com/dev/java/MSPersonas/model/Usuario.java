@@ -33,4 +33,7 @@ public class Usuario implements Serializable {
     @JoinColumn(name = "tipo", referencedColumnName = "idtipo_usuario",nullable = false)
     private TipoUsuario tipoUsuario;
 
+    public String dni() {
+        return dni;
+    }
 }

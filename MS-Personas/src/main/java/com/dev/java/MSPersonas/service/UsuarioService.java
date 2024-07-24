@@ -28,6 +28,15 @@ public class UsuarioService {
             Future<Usuario> newUserFuture = executorService.submit(userCreationTask); //end of submit
             Usuario nuevoUsuario = newUserFuture.get();
 
+            //Consultar al servicio de veraz y matriz de productos
+            Optional<Usuario> createdUserOpt = usuarioRepository.findByDni(nuevoUsuario.dni());
+            //TODO: guardar el domicilio, llamar al servicio de veraz, consultar la matriz del producto
+
+
+
+
+
+            //Notificar a los servicios de Cuentas y Tarjetas, pasando el nuevo DTO con toda la info del usuario creado necesaria + el proudcto a crear
             kafkaTemplate.send(newUserCreatedTopic, "NUEVO USUARIO CREADO");
 
             return nuevoUsuario;

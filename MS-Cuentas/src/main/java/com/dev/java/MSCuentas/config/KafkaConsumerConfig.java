@@ -28,8 +28,8 @@ public class KafkaConsumerConfig {
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new ErrorHandlingDeserializer<>(new JsonDeserializer<>(String.class))); //Cambiar al Object*/
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9093");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "group_id");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "new-user-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);

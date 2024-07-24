@@ -6,23 +6,41 @@ import com.dev.java.MSTarjetas.model.Tarjeta;
 import com.dev.java.MSTarjetas.repository.EstadoTarjetaRepository;
 import com.dev.java.MSTarjetas.repository.TarjetaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
 public class TarjetaService {
 
     private final TarjetaRepository tarjetaRepository;
-
     private final EstadoTarjetaRepository estadoTarjetaRepository;
 
+    @KafkaListener(topics = "healthCheckTopic", groupId = "new-user-group")
+    public void consume(String message) {
+        System.out.println("Consumed message: " + message);
+    }
 
-    public CompletableFuture<String> createTarjeta(TarjetaDTO tarjetaDTO) {
+    @KafkaListener(topics = "newUserCreatedTopic", groupId = "new-user-group")
+    public void crearTarjeta(TarjetaDTO tarjetaDTO){
+        try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 
-        return CompletableFuture.supplyAsync(() -> {
+            Callable cardCreationTask = cardCreationTask(tarjetaDTO, tarjetaRepository, estadoTarjetaRepository);
+            Future newAcoountFuture = executorService.submit(cardCreationTask); //end of submit
+            newAcoountFuture.get();
 
+        } //END OF TRY
+        catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Callable cardCreationTask(TarjetaDTO tarjetaDTO, TarjetaRepository tarjetaRepository, EstadoTarjetaRepository estadoTarjetaRepository ){
+        return () -> {
             try {
                 EstadoTarjeta estadoTarjeta = estadoTarjetaRepository.findById(tarjetaDTO.estado())
                         .orElseThrow(() -> new IllegalArgumentException("Estado no encontrado"));
@@ -41,13 +59,7 @@ public class TarjetaService {
             } catch (Exception e) {
                 throw new RuntimeException("Error en el proceso de creación de tarjeta", e);
             }
-
-        }).handle((result, ex) -> {
-            if (ex != null) {
-                return "Error creando tarjeta: " + ex.getCause().getMessage();
-            }
-            return result;
-
-        });
+        };
     }
 }
+

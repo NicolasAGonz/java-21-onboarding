@@ -8,28 +8,30 @@ services:
 
   #https://hub.docker.com/_/zookeeper
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.4 #zookeeper:latest
+    image: confluentinc/cp-zookeeper:latest #zookeeper:latest
     container_name: zookeeper
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_RATE: 2000
 
   #https://hub.docker.com/r/apache/kafka
   broker:
-    image: confluentinc/cp-kafka:7.4.4 #apache/kafka:latest
+    image: confluentinc/cp-kafka:latest #apache/kafka:latest
     container_name: broker
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
-      KAFKA_LISTENER_NAMES: INSIDE, OUTSIDE #INSIDE is for Docker containers, OUTSIDE is for localhost.
-      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://broker:9093,OUTSIDE://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -63,12 +65,12 @@ services:
         - ./volumenes/mongodb_data:/data/db
         - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
-  MS-Cuentas:
+  mscuentas:
     build:
       context: ./MS-Cuentas
       dockerfile: Dockerfile
-    image: ms-cuentas:latest
-    container_name: MS-Cuentas
+    image: mscuentas:latest
+    container_name: mscuentas
     ports:
       - "8091:8091" #HOST:Container
     expose:
@@ -81,12 +83,12 @@ services:
       - broker
       - node_app
 
-  MS-Personas:
+  mspersonas:
     build:
       context: ./MS-Personas
       dockerfile: Dockerfile
-    image: ms-personas:latest
-    container_name: MS-Personas
+    image: mspersonas:latest
+    container_name: mspersonas
     ports:
       - "8090:8090" #HOST:Container
     expose:
@@ -99,12 +101,12 @@ services:
       - broker
       - node_app
 
-  MS-Tarjetas:
+  mstarjetas:
     build:
       context: ./MS-Tarjetas
       dockerfile: Dockerfile
-    image: ms-tarjetas:latest
-    container_name: MS-Tarjetas
+    image: mstarjetas:latest
+    container_name: mstarjetas
     ports:
       - "8092:8092" #HOST:Container
     expose:

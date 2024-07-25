@@ -18,12 +18,12 @@ public class TarjetaService {
     private final TarjetaRepository tarjetaRepository;
     private final EstadoTarjetaRepository estadoTarjetaRepository;
 
-    @KafkaListener(topics = "healthCheckTopic", groupId = "new-user-group")
+    @KafkaListener(topics = "healthCheckTopic", groupId = "newUserGroup")
     public void consume(String message) {
         System.out.println("Consumed message: " + message);
     }
 
-    @KafkaListener(topics = "newUserCreatedTopic", groupId = "new-user-group")
+    @KafkaListener(topics = "newUserCreatedTopic", groupId = "newUserGroup")
     public void crearTarjeta(TarjetaDTO tarjetaDTO){
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 

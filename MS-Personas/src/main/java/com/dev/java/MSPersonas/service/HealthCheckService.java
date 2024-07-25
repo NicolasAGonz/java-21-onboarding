@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 public class HealthCheckService {
 
     private final KafkaTemplate kafkaTemplate;
-    private static final String healthCheckTopic = "healthCheckTopic";
+
 
     public ResponseEntity<String> status (){
 
-        kafkaTemplate.send(healthCheckTopic, "ESTADO DE LA APLICACION CONSULTADO");
+        kafkaTemplate.send("healthCheckTopic", "ESTADO DE LA APLICACION CONSULTADO");
 
         return new ResponseEntity<>("Application up and running", HttpStatus.OK);
     }

@@ -21,12 +21,12 @@ public class CuentaService {
     private final CodigoMonedaRepository codigoMonedaRepository;
     private final EstadoCuentaRepository estadoCuentaRepository;
 
-    @KafkaListener(topics = "healthCheckTopic", groupId = "new-user-group")
+    @KafkaListener(topics = "healthCheckTopic", groupId = "newUserGroup")
     public void consume(String message) {
         System.out.println("Consumed message: " + message);
     }
 
-    @KafkaListener(topics = "newUserCreatedTopic", groupId = "new-user-group")
+    @KafkaListener(topics = "newUserCreatedTopic", groupId = "newUserGroup")
     public void crearCuenta(CrearCuentaDTO dto) {
 
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {

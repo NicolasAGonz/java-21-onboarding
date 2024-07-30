@@ -19,6 +19,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final DomicilioRepository domicilioRepository;
     private final KafkaTemplate kafkaTemplate;
+    private final NodeServiceClient nodeServiceClient;
     private static final String newUserCreatedTopic = "newUserCreatedTopic";
 
     public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
@@ -32,6 +33,12 @@ public class UsuarioService {
             Optional<Usuario> createdUserOpt = usuarioRepository.findByDni(nuevoUsuario.dni());
             //TODO: guardar el domicilio, llamar al servicio de veraz, consultar la matriz del producto
 
+            String createdUserDNI = createdUserOpt.get().getDni();
+
+            //Llamar al servicio veraz
+            String worldsysData = nodeServiceClient.getWorldsysData(createdUserDNI);
+            String verazData = nodeServiceClient.getVerazData(createdUserDNI);
+            String renaperData = nodeServiceClient.getRenaperData(createdUserDNI);
 
 
 

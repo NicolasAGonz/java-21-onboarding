@@ -2,12 +2,15 @@ package com.dev.java.MSPersonas.service;
 
 import com.dev.java.MSPersonas.dto.UsuarioDTO;
 import com.dev.java.MSPersonas.model.EstadoUsuario;
+import com.dev.java.MSPersonas.model.Producto;
 import com.dev.java.MSPersonas.model.Usuario;
 import com.dev.java.MSPersonas.repository.DomicilioRepository;
 import com.dev.java.MSPersonas.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.*;
 
@@ -20,6 +23,7 @@ public class UsuarioService {
     private final DomicilioRepository domicilioRepository;
     private final KafkaTemplate kafkaTemplate;
     private final NodeServiceClient nodeServiceClient;
+    private final ProductTableService productTableService;
     private static final String newUserCreatedTopic = "newUserCreatedTopic";
 
     public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
@@ -35,15 +39,18 @@ public class UsuarioService {
 
             String createdUserDNI = createdUserOpt.get().getDni();
 
-            //Llamar al servicio veraz
+            //Llamar a los servicios
             String worldsysData = nodeServiceClient.getWorldsysData(createdUserDNI);
             String verazData = nodeServiceClient.getVerazData(createdUserDNI);
             String renaperData = nodeServiceClient.getRenaperData(createdUserDNI);
 
+            //consultar la tabla de productos y obtener el producto correspondiente
 
+            BigDecimal sueldoBruto = usuarioDTO.sueldoBruto();
 
+            Producto producto = productTableService.getProduct(sueldoBruto, worldsysData, verazData, renaperData );
 
-            //Notificar a los servicios de Cuentas y Tarjetas, pasando el nuevo DTO con toda la info del usuario creado necesaria + el proudcto a crear
+            //Notificar a los servicios de Cuentas y Tarjetas, pasando el nuevo DTO con toda la info del usuario creado necesaria + el producto a crear
             kafkaTemplate.send(newUserCreatedTopic, "NUEVO USUARIO CREADO");
 
             return nuevoUsuario;

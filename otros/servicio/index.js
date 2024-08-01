@@ -6,11 +6,11 @@ app.get('service/worldsys', (req, res) => {
    const dni =  req.query.dni
 
    let data = [
-    {dni:12345678,isTerrotist:true},
-    {dni:12345675,isTerrotist:false},
-    {dni:12345674,isTerrotist:true},
-    {dni:12345673,isTerrotist:false},
-    {dni:12345672,isTerrotist:true},
+    {dni:12345678,isTerrorist:true},
+    {dni:12345675,isTerrorist:false},
+    {dni:12345674,isTerrorist:true},
+    {dni:12345673,isTerrorist:false},
+    {dni:12345672,isTerrorist:true},
 
 
 ]

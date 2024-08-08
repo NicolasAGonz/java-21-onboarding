@@ -1,6 +1,7 @@
 package com.dev.java.MSPersonas.config;
 
 
+import com.dev.java.MSPersonas.dto.NewUserWithProductDTO;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -23,12 +24,8 @@ import java.util.Map;
 @EnableKafka
 public class KafkaProducerConfig {
 
-    @Bean
-    public KafkaAdmin admin() {
-        Map<String, Object> configs = new HashMap<>();
-        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9092");
-        return new KafkaAdmin(configs);
-    }
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServer;
 
     @Bean
     public NewTopic generateTopic() {
@@ -45,22 +42,43 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public KafkaAdmin admin() {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
+        return new KafkaAdmin(configs);
+    }
+
+    @Bean
     public Map<String, Object> producerConfig() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "broker:9092");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         return properties;
     }
 
     @Bean
-    public ProducerFactory<String, String> producerFactory() {
+    public ProducerFactory<String, String> producerFactoryString() {
         return new DefaultKafkaProducerFactory<>(producerConfig());
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<String, String> kafkaTemplateHealthCheck() {
+        return new KafkaTemplate<>(producerFactoryString());
     }
+
+    @Bean
+    public ProducerFactory<String, NewUserWithProductDTO> producerFactoryDTO() {
+        Map<String, Object> props = new HashMap<>(producerConfig());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(props);
+    }
+
+    @Bean
+    public KafkaTemplate<String, NewUserWithProductDTO> kafkaTemplateNewUserDTO() {
+        return new KafkaTemplate<>(producerFactoryDTO());
+    }
+
+
 
 }

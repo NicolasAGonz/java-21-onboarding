@@ -1,6 +1,8 @@
 package com.dev.java.MSPersonas.service;
 
+import com.dev.java.MSPersonas.dto.NewUserWithProductDTO;
 import com.dev.java.MSPersonas.dto.UsuarioDTO;
+import com.dev.java.MSPersonas.kafka.KafkaProducer;
 import com.dev.java.MSPersonas.model.EstadoUsuario;
 import com.dev.java.MSPersonas.model.Producto;
 import com.dev.java.MSPersonas.model.Usuario;
@@ -21,10 +23,9 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final DomicilioRepository domicilioRepository;
-    private final KafkaTemplate kafkaTemplate;
+    private final KafkaProducer kafkaProducer;
     private final NodeServiceClient nodeServiceClient;
     private final ProductTableService productTableService;
-    private static final String newUserCreatedTopic = "newUserCreatedTopic";
 
     public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -35,9 +36,10 @@ public class UsuarioService {
 
             //Consultar al servicio de veraz y matriz de productos
             Optional<Usuario> createdUserOpt = usuarioRepository.findByDni(nuevoUsuario.dni());
-            //TODO: guardar el domicilio, llamar al servicio de veraz, consultar la matriz del producto
+            //TODO: guardar el domicilio
 
             String createdUserDNI = createdUserOpt.get().getDni();
+            int createdUserPersnum = createdUserOpt.get().getPersnum();
 
             //Llamar a los servicios
             String worldsysData = nodeServiceClient.getWorldsysData(createdUserDNI);
@@ -51,7 +53,14 @@ public class UsuarioService {
             Producto producto = productTableService.getProduct(sueldoBruto, worldsysData, verazData, renaperData );
 
             //Notificar a los servicios de Cuentas y Tarjetas, pasando el nuevo DTO con toda la info del usuario creado necesaria + el producto a crear
-            kafkaTemplate.send(newUserCreatedTopic, "NUEVO USUARIO CREADO");
+
+            NewUserWithProductDTO newUser = NewUserWithProductDTO.builder()
+                    .persnum(createdUserPersnum)
+                    .dni(createdUserDNI)
+                    .producto(producto)
+                    .build();
+
+            kafkaProducer.sendNewUserWithProductMessage(newUser);
 
             return nuevoUsuario;
         } //END OF TRY

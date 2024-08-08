@@ -1,5 +1,6 @@
 package com.dev.java.MSPersonas.service;
 
+import com.dev.java.MSPersonas.kafka.KafkaProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,12 +11,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class HealthCheckService {
 
-    private final KafkaTemplate kafkaTemplate;
+    private final KafkaProducer kafkaProducer;
 
 
     public ResponseEntity<String> status (){
 
-        kafkaTemplate.send("healthCheckTopic", "ESTADO DE LA APLICACION CONSULTADO");
+        kafkaProducer.sendHealthCheckMessage( "ESTADO_DE_LA_APLICACION_CONSULTADO");
 
         return new ResponseEntity<>("Application up and running", HttpStatus.OK);
     }

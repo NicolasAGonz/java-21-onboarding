@@ -1,5 +1,6 @@
 package com.dev.java.MSPersonas.service;
 
+
 import com.dev.java.MSPersonas.dto.NewUserWithProductDTO;
 import com.dev.java.MSPersonas.dto.UsuarioDTO;
 import com.dev.java.MSPersonas.kafka.KafkaProducer;
@@ -9,8 +10,9 @@ import com.dev.java.MSPersonas.model.Usuario;
 import com.dev.java.MSPersonas.repository.DomicilioRepository;
 import com.dev.java.MSPersonas.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -20,6 +22,7 @@ import java.util.concurrent.*;
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(UsuarioService.class);
 
     private final UsuarioRepository usuarioRepository;
     private final DomicilioRepository domicilioRepository;
@@ -29,6 +32,7 @@ public class UsuarioService {
 
     public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
+            logger.warn("INICIO DEL TRY, NUEVO VTHREAD CREADO");
 
             Callable<Usuario> userCreationTask = createUserTask(usuarioDTO, usuarioRepository);
             Future<Usuario> newUserFuture = executorService.submit(userCreationTask); //end of submit
@@ -41,6 +45,8 @@ public class UsuarioService {
             String createdUserDNI = createdUserOpt.get().getDni();
             int createdUserPersnum = createdUserOpt.get().getPersnum();
 
+            logger.warn("LLAMANDO A LOS SERVICIOS NODE CON EL DNI DE USUARIO", createdUserDNI );
+
             //Llamar a los servicios
             String worldsysData = nodeServiceClient.getWorldsysData(createdUserDNI);
             String verazData = nodeServiceClient.getVerazData(createdUserDNI);
@@ -50,17 +56,21 @@ public class UsuarioService {
 
             BigDecimal sueldoBruto = usuarioDTO.sueldoBruto();
 
+            logger.warn("CONSULTANDO LA TABLA DE PRODUCTOS");
+
             Producto producto = productTableService.getProduct(sueldoBruto, worldsysData, verazData, renaperData );
 
             //Notificar a los servicios de Cuentas y Tarjetas, pasando el nuevo DTO con toda la info del usuario creado necesaria + el producto a crear
 
-            NewUserWithProductDTO newUser = NewUserWithProductDTO.builder()
+            NewUserWithProductDTO newUserWithProduct = NewUserWithProductDTO.builder()
                     .persnum(createdUserPersnum)
                     .dni(createdUserDNI)
                     .producto(producto)
                     .build();
 
-            kafkaProducer.sendNewUserWithProductMessage(newUser);
+            logger.warn("ENVIANDO MENSAJE MEDIANTE KAFKA PARA EL NUEVO USUARIO CREADO CON PROUCTOS", newUserWithProduct);
+
+            kafkaProducer.sendNewUserWithProductMessage(newUserWithProduct);
 
             return nuevoUsuario;
         } //END OF TRY
@@ -75,6 +85,7 @@ public class UsuarioService {
 
         return () -> {
 
+            logger.warn("TASK INVOCADA: createUserTask");
             Optional<Usuario> existingUserOpt = usuarioRepository.findByDni(usuarioDTO.dni());
 
             if (existingUserOpt.isPresent()) {
@@ -109,6 +120,8 @@ public class UsuarioService {
                         .estadoUsuario(new EstadoUsuario(1, "Activo"))
                         .tipoUsuario(usuarioDTO.tipoUsuario())
                         .build();
+
+                logger.warn("GUARDANDO NUEVO USUARIO", nuevoUsuario);
 
                 usuarioRepository.save(nuevoUsuario);
 

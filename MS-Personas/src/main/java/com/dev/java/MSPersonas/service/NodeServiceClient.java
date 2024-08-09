@@ -11,7 +11,7 @@ public class NodeServiceClient {
     private final RestTemplate restTemplate;
     private final String baseUrl;
 
-    public NodeServiceClient(RestTemplate restTemplate, @Value("${node.service.base-url}") String baseUrl) {
+    public NodeServiceClient(RestTemplate restTemplate, @Value("${node.service.baseurl}") String baseUrl) {
         this.restTemplate = restTemplate;
         this.baseUrl = baseUrl;
     }

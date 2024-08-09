@@ -1,12 +1,9 @@
 version: '3.8'
 
-networks:
-  onboarding:
-    driver: bridge
-
 services:
   node_app:
     build: ./otros/servicio/.
+    container_name: nodeapp
     ports:
       - "3000:3000" #HOST:Container
     networks:
@@ -23,7 +20,6 @@ services:
       ZOOKEEPER_TICK_RATE: 2000
     networks:
       - onboarding
-
 
   #https://hub.docker.com/r/apache/kafka
   broker:
@@ -44,7 +40,6 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - onboarding
-
 
   mariadb:
     image: mariadb:latest
@@ -143,3 +138,7 @@ services:
 volumes:
   mariadb_data:
   mongodb_data:
+
+networks:
+  onboarding:
+    driver: bridge

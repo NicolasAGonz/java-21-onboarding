@@ -9,7 +9,8 @@ import java.util.Optional;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Producto {
     private String cuenta;
-    private Optional<String> tarjeta;
+    private String tarjeta;
 }

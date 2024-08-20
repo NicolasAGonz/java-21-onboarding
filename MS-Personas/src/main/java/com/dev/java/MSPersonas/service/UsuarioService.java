@@ -32,7 +32,7 @@ public class UsuarioService {
 
     public Usuario crearUsuario(UsuarioDTO usuarioDTO) {
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
-            logger.warn("INICIO DEL TRY, NUEVO VTHREAD CREADO");
+            logger.info("INICIO DEL TRY, NUEVO VTHREAD CREADO");
 
             Callable<Usuario> userCreationTask = createUserTask(usuarioDTO, usuarioRepository);
             Future<Usuario> newUserFuture = executorService.submit(userCreationTask); //end of submit
@@ -45,7 +45,7 @@ public class UsuarioService {
             String createdUserDNI = createdUserOpt.get().getDni();
             int createdUserPersnum = createdUserOpt.get().getPersnum();
 
-            logger.warn("LLAMANDO A LOS SERVICIOS NODE CON EL DNI DE USUARIO", createdUserDNI );
+            logger.info("LLAMANDO A LOS SERVICIOS NODE CON EL DNI DE USUARIO: " + createdUserDNI );
 
             //Llamar a los servicios
             String worldsysData = nodeServiceClient.getWorldsysData(createdUserDNI);
@@ -56,9 +56,15 @@ public class UsuarioService {
 
             BigDecimal sueldoBruto = usuarioDTO.sueldoBruto();
 
-            logger.warn("CONSULTANDO LA TABLA DE PRODUCTOS");
+            logger.info("CONSULTANDO LA TABLA DE PRODUCTOS CON LOS SIGUIENTES DATOS");
+            logger.info("worldsysData: " + worldsysData);
+            logger.info("verazData: " + verazData);
+            logger.info("renaperData" + renaperData);
 
             Producto producto = productTableService.getProduct(sueldoBruto, worldsysData, verazData, renaperData );
+
+            logger.info("SE HA CONSULTADO A LA TABLA DE PRODUCTOS Y SE IDENTIFICARON LOS SIGUIENTES PRODUCTOS PARA EL CLIENTE");
+            logger.info(producto.toString());
 
             //Notificar a los servicios de Cuentas y Tarjetas, pasando el nuevo DTO con toda la info del usuario creado necesaria + el producto a crear
 
@@ -68,7 +74,8 @@ public class UsuarioService {
                     .producto(producto)
                     .build();
 
-            logger.warn("ENVIANDO MENSAJE MEDIANTE KAFKA PARA EL NUEVO USUARIO CREADO CON PROUCTOS", newUserWithProduct);
+            logger.info("ENVIANDO MENSAJE MEDIANTE KAFKA PARA EL NUEVO USUARIO CREADO CON PROUCTOS");
+            logger.info(newUserWithProduct.toString());
 
             kafkaProducer.sendNewUserWithProductMessage(newUserWithProduct);
 

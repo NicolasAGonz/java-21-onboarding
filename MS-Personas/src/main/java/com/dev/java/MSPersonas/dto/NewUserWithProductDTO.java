@@ -6,6 +6,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@ToString
 public class NewUserWithProductDTO {
     int persnum;
     String dni;

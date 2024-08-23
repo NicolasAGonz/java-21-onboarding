@@ -24,7 +24,7 @@ public class ProductTableService {
     private static final String TARJETA_BLACK = "tarjeta_black";
     private static final String TARJETA_NULL = "no_aplica_tarjeta";
 
-    private static final Logger logger = (Logger) LoggerFactory.getLogger(UsuarioService.class);
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(ProductTableService.class);
 
     public Producto getProduct(BigDecimal sueldoBruto, String worldsysData, String verazData, String renaperData) {
         Gson gson = new Gson();

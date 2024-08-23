@@ -67,7 +67,7 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerFactoryString());
     }
 
-    @Bean
+    /*@Bean
     public ProducerFactory<String, NewUserWithProductDTO> producerFactoryDTO() {
         Map<String, Object> props = new HashMap<>(producerConfig());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
@@ -77,6 +77,11 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, NewUserWithProductDTO> kafkaTemplateNewUserDTO() {
         return new KafkaTemplate<>(producerFactoryDTO());
+    }*/
+
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplateNewUserDTO() {
+        return new KafkaTemplate<>(producerFactoryString());
     }
 
 

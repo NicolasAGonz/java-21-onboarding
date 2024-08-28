@@ -128,7 +128,7 @@ public class UsuarioService {
                         .tipoUsuario(usuarioDTO.tipoUsuario())
                         .build();
 
-                logger.warn("GUARDANDO NUEVO USUARIO", nuevoUsuario);
+                logger.info("GUARDANDO NUEVO USUARIO", nuevoUsuario);
 
                 usuarioRepository.save(nuevoUsuario);
 

@@ -20,7 +20,6 @@ import java.io.Serializable;
 public final class CodigoMoneda implements Serializable {
     @Id
     private int cod_moneda;
-
     private String pais;
     private String simbolo;
 

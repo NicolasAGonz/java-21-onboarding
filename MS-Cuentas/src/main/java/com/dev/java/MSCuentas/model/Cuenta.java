@@ -1,10 +1,7 @@
 package com.dev.java.MSCuentas.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -12,20 +9,25 @@ import java.io.Serializable;
 @Table(name = "cuentas")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public final class Cuenta implements Serializable {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
     private String numcue;
 
     @ManyToOne
-    @JoinColumn(name = "divisa")
-    private CodigoMoneda divisa;
+    @JoinColumn(name = "divisa", referencedColumnName = "cod_moneda",nullable = false)
+    private CodigoMoneda codigoMoneda;
 
     @ManyToOne
-    @JoinColumn(name = "estado")
-    private EstadoCuenta estado;
+    @JoinColumn(name = "estado", referencedColumnName = "id",nullable = false)
+    private EstadoCuenta estadoCuenta;
 
+    @Column(nullable = false)
     private int persnum;
+    @Column(nullable = false)
     private double saldo;
 }

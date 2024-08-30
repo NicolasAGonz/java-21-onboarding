@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -39,6 +38,7 @@ public class KafkaConsumer {
             logger.info("ARME EL SIGUIENTE DTO CON LA SIGUIENTE INFORMACION: ");
             logger.info(dto.toString());
             logger.info("LLAMANDO AL SERVICIO DE CREACION DE CUENTA...");
+            cuentaService.crearCuenta(dto);
 
 
         } catch (JsonProcessingException e) {

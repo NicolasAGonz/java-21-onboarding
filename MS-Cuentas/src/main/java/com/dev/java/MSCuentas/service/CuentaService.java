@@ -2,6 +2,7 @@ package com.dev.java.MSCuentas.service;
 
 import com.dev.java.MSCuentas.dto.NewUserWithProductDTO;
 import com.dev.java.MSCuentas.kafka.KafkaConsumer;
+import com.dev.java.MSCuentas.kafka.KafkaProducer;
 import com.dev.java.MSCuentas.model.CodigoMoneda;
 import com.dev.java.MSCuentas.model.Cuenta;
 import com.dev.java.MSCuentas.model.EstadoCuenta;
@@ -24,10 +25,10 @@ public class CuentaService {
 
     private final CuentaRepository cuentaRepository;
     private final CodigoMonedaRepository codigoMonedaRepository;
-    private final EstadoCuentaRepository estadoCuentaRepository;
+    private final KafkaProducer kafkaProducer;
     private static final String CUENTA_PESOS = "cuenta_pesos";
     private static final String CUENTA_PESOS_DOLAR = "cuenta_pesos_dolar";
-    private static final Logger logger = (Logger) LoggerFactory.getLogger(KafkaConsumer.class);
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(CuentaService.class);
     private static RandomNumberGenerator randomNumberGenerator;
 
 
@@ -35,10 +36,21 @@ public class CuentaService {
 
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 
-            Callable accountCreationTask = accountCreationTask(dto, cuentaRepository, codigoMonedaRepository, estadoCuentaRepository);
-            Future newAccountFuture = executorService.submit(accountCreationTask); //end of submit
-            newAccountFuture.get();
+            Callable<List<Cuenta>> accountCreationTask = accountCreationTask(dto, cuentaRepository, codigoMonedaRepository, randomNumberGenerator);
+            Future<List<Cuenta>> newAccountFuture = executorService.submit(accountCreationTask); //end of submit
+            List<Cuenta> newAccountsCreated = newAccountFuture.get();
 
+            logger.info("ENVIANDO MENSAJE MEDIANTE KAFKA: NUEVAS CUENTAS CREADAS: ");
+            newAccountsCreated.forEach(account -> {
+                logger.info("Cuenta creada: " + account.toString());
+
+                int persnum = dto.getPersnum();
+                int codMoneda = account.getCodigoMoneda().getCod_moneda();
+
+                int numcue = cuentaRepository.findNumcueByPersnumAndCodigoMoneda(persnum, codMoneda);
+                kafkaProducer.sendNewAccountCreatedMessage(String.valueOf(numcue));
+                }
+            );
         } //END OF TRY
         catch (ExecutionException e) {
             throw new RuntimeException(e);
@@ -47,12 +59,13 @@ public class CuentaService {
         }
     }
 
-    public static Callable accountCreationTask (NewUserWithProductDTO dto, CuentaRepository cuentaRepository, CodigoMonedaRepository codigoMonedaRepository, EstadoCuentaRepository estadoCuentaRepository){
+    public static Callable<List<Cuenta>> accountCreationTask (NewUserWithProductDTO dto, CuentaRepository cuentaRepository, CodigoMonedaRepository codigoMonedaRepository, RandomNumberGenerator randomNumberGenerator){
 
         return () -> {
 
             String cuenta = dto.getProducto().getCuenta();
             List<Integer> cuentasACrear = new ArrayList<>();
+            List<Cuenta> createdAccounts = new ArrayList<>();
 
             Integer idMonedaARS = codigoMonedaRepository.findCodMonedaBySimbolo("ARS");
 
@@ -79,7 +92,7 @@ public class CuentaService {
                                 .orElseThrow(() -> new IllegalArgumentException("Codigo de moneda no encontrada"));
 
                         newAccount = Cuenta.builder()
-                                .numcue(randomNumberGenerator.generateRandomNumber(10))
+                                .numcue(randomNumberGenerator.generateRandomNumber())
                                 .codigoMoneda(new CodigoMoneda(moneda.getCod_moneda(), moneda.getPais(), moneda.getSimbolo()))
                                 .estadoCuenta(new EstadoCuenta(1, "Activa"))
                                 .persnum(dto.getPersnum())
@@ -88,6 +101,7 @@ public class CuentaService {
 
                         logger.info("GUARDANDO NUEVA CUENTA...");
                         cuentaRepository.save(newAccount);
+                        createdAccounts.add(newAccount);
 
                         logger.info("SE HA GUARDADO LA SIGUIENTE CUENTA: ");
                         logger.info(newAccount.toString());
@@ -103,7 +117,7 @@ public class CuentaService {
                 throw new IllegalStateException("No se pudo crear ninguna cuenta");
             }
 
-            return newAccount;
+            return createdAccounts;
 
         }; //End of Callable Return
     }

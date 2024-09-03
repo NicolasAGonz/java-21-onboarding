@@ -4,16 +4,12 @@ import java.util.Random;
 
 public class RandomNumberGenerator {
 
-    public static String generateRandomNumber(int length) {
-        String digits = "1234567890";
+    private static final int MAX_INTEGER_VALUE = Integer.MAX_VALUE;
+
+    public static String generateRandomNumber() {
         Random random = new Random();
-        StringBuilder sb = new StringBuilder(length);
-
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(digits.length());
-            sb.append(digits.charAt(index));
-        }
-
-        return sb.toString();
+        // Generar un número aleatorio entre 1 y el valor máximo de Integer
+        int randomNumber = random.nextInt(MAX_INTEGER_VALUE) + 1;
+        return String.valueOf(randomNumber);
     }
 }

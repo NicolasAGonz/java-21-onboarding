@@ -10,13 +10,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaProducer {
 
-    private final ObjectMapper objectMapper = new ObjectMapper(); // Puedes hacer esto como un bean si prefieres
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String TOPIC_NEW_USER_WITH_PRODUCT = "newUserCreatedTopic";
     private static final String TOPIC_STRING_MESSAGE = "healthCheckTopic";
-
-    /*@Autowired
-    private KafkaTemplate<String, NewUserWithProductDTO> kafkaTemplateNewUserDTO;*/
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplateNewUserDTO;
@@ -25,8 +22,6 @@ public class KafkaProducer {
     private KafkaTemplate<String, String> kafkaTemplateHealthCheck;
 
     public void sendNewUserWithProductMessage(NewUserWithProductDTO newUserWithProductDTO) {
-        //kafkaTemplateNewUserDTO.send(TOPIC_NEW_USER_WITH_PRODUCT, newUserWithProductDTO);
-
         try {
             // Convierte el DTO a JSON String
             String jsonString = objectMapper.writeValueAsString(newUserWithProductDTO);

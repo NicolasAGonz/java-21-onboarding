@@ -1,7 +1,5 @@
-package com.dev.java.MSPersonas.config;
+package com.dev.java.MSCuentas.config;
 
-
-import com.dev.java.MSPersonas.dto.NewUserWithProductDTO;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -29,14 +27,7 @@ public class KafkaProducerConfig {
 
     @Bean
     public NewTopic generateTopic() {
-        return TopicBuilder.name("newUserCreatedTopic")
-                .partitions(2)
-                .build();
-    }
-
-    @Bean
-    public NewTopic generateHealthCheckTopic() {
-        return TopicBuilder.name("healthCheckTopic")
+        return TopicBuilder.name("newAccountsCreatedTopic")
                 .partitions(2)
                 .build();
     }
@@ -63,16 +54,8 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplateHealthCheck() {
+    public KafkaTemplate<String, String> kafkaTemplateNewAccountsDTO() {
         return new KafkaTemplate<>(producerFactoryString());
     }
-
-
-    @Bean
-    public KafkaTemplate<String, String> kafkaTemplateNewUserDTO() {
-        return new KafkaTemplate<>(producerFactoryString());
-    }
-
-
 
 }

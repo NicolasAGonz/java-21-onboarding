@@ -36,23 +36,6 @@ public class KafkaConsumerConfig {
         return new DefaultKafkaConsumerFactory<>(properties);
     }
 
-    /*@Bean
-    public ConsumerFactory<String, NewUserWithProductDTO> consumerProductFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-
-        // Configura el deserializador de la clave
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class.getName());
-        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class.getName());
-
-        // Configura el deserializador del valor
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class.getName());
-        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
-
-        return new DefaultKafkaConsumerFactory<>(props);
-    }*/
-
     @Bean
     public ConsumerFactory<String, NewUserWithProductDTO> consumerProductFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -79,10 +62,4 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
-    /*@Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerProductFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerHealthCheckFactory());
-        return factory;
-    }*/
 }

@@ -29,14 +29,14 @@ public class CuentaService {
     private static final String CUENTA_PESOS = "cuenta_pesos";
     private static final String CUENTA_PESOS_DOLAR = "cuenta_pesos_dolar";
     private static final Logger logger = (Logger) LoggerFactory.getLogger(CuentaService.class);
-    private static RandomNumberGenerator randomNumberGenerator;
+
 
 
     public void crearCuenta(NewUserWithProductDTO dto) {
 
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 
-            Callable<List<Cuenta>> accountCreationTask = accountCreationTask(dto, cuentaRepository, codigoMonedaRepository, randomNumberGenerator);
+            Callable<List<Cuenta>> accountCreationTask = accountCreationTask(dto, cuentaRepository, codigoMonedaRepository);
             Future<List<Cuenta>> newAccountFuture = executorService.submit(accountCreationTask); //end of submit
             List<Cuenta> newAccountsCreated = newAccountFuture.get();
 
@@ -44,11 +44,13 @@ public class CuentaService {
             newAccountsCreated.forEach(account -> {
                 logger.info("Cuenta creada: " + account.toString());
 
-                int persnum = dto.getPersnum();
-                int codMoneda = account.getCodigoMoneda().getCod_moneda();
+                String numcue = account.getNumcue();
 
-                int numcue = cuentaRepository.findNumcueByPersnumAndCodigoMoneda(persnum, codMoneda);
-                kafkaProducer.sendNewAccountCreatedMessage(String.valueOf(numcue));
+                //String cardType = dto.getProducto().getTarjeta();
+                //String cardCurrency = account.getCodigoMoneda().getSimbolo();
+                //TODO: Averiguar como impacta que la tarjeta sea de un tipo u otro
+
+                kafkaProducer.sendNewAccountCreatedMessage(numcue);
                 }
             );
         } //END OF TRY
@@ -59,7 +61,7 @@ public class CuentaService {
         }
     }
 
-    public static Callable<List<Cuenta>> accountCreationTask (NewUserWithProductDTO dto, CuentaRepository cuentaRepository, CodigoMonedaRepository codigoMonedaRepository, RandomNumberGenerator randomNumberGenerator){
+    public static Callable<List<Cuenta>> accountCreationTask (NewUserWithProductDTO dto, CuentaRepository cuentaRepository, CodigoMonedaRepository codigoMonedaRepository){
 
         return () -> {
 
@@ -67,7 +69,10 @@ public class CuentaService {
             List<Integer> cuentasACrear = new ArrayList<>();
             List<Cuenta> createdAccounts = new ArrayList<>();
 
+            logger.info("RECIBI UNA SOLICITUD DE CREACION DE CUENTAS: " + cuenta);
+
             Integer idMonedaARS = codigoMonedaRepository.findCodMonedaBySimbolo("ARS");
+            logger.info("idMonedaARS: {}",idMonedaARS);
 
             if (cuenta.equals(CUENTA_PESOS)){
                 cuentasACrear.add(idMonedaARS); //Agrego una cuenta en pesos
@@ -75,6 +80,7 @@ public class CuentaService {
 
             if (cuenta.equals(CUENTA_PESOS_DOLAR)){
                 Integer idMonedaUSD = codigoMonedaRepository.findCodMonedaBySimbolo("USD");
+                logger.info("idMonedaUSD: {}",idMonedaUSD);
                 cuentasACrear.add(idMonedaARS); //Agrego una cuenta en pesos
                 cuentasACrear.add(idMonedaUSD); //Agrego una cuenta en dolares
             }
@@ -92,7 +98,7 @@ public class CuentaService {
                                 .orElseThrow(() -> new IllegalArgumentException("Codigo de moneda no encontrada"));
 
                         newAccount = Cuenta.builder()
-                                .numcue(randomNumberGenerator.generateRandomNumber())
+                                .numcue(RandomNumberGenerator.generateRandomNumber())
                                 .codigoMoneda(new CodigoMoneda(moneda.getCod_moneda(), moneda.getPais(), moneda.getSimbolo()))
                                 .estadoCuenta(new EstadoCuenta(1, "Activa"))
                                 .persnum(dto.getPersnum())

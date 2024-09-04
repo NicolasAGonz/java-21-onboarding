@@ -20,7 +20,7 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = "healthCheckTopic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerContainerFactory")
     public void consumeStringMessage(String message) {
-        System.out.println("Consumed String message: " + message);
+        logger.info("Consumed String message: " + message);
     }
 
     @KafkaListener(topics = "newUserCreatedTopic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerProductFactory")

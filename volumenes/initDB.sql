@@ -36,7 +36,7 @@ INSERT INTO `codigo_moneda` (`cod_moneda`, `pais`, `simbolo`) VALUES
 (3, 'Japón', 'JPY'),
 (4, 'Reino Unido', 'GBP'),
 (5, 'Australia', 'AUD'),
-(6, 'Argentina, ARS');
+(6, 'Argentina', 'ARS');
 
 
 /*!40101 SET character_set_client = @saved_cs_client */;

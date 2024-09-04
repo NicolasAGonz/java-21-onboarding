@@ -18,7 +18,6 @@ public class TarjetaService {
     private final TarjetaRepository tarjetaRepository;
     private final EstadoTarjetaRepository estadoTarjetaRepository;
 
-    @KafkaListener(topics = "newUserCreatedTopic", groupId = "newUserGroup")
     public void crearTarjeta(TarjetaDTO tarjetaDTO){
         try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
 

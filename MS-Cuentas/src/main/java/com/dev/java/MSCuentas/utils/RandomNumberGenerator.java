@@ -8,8 +8,9 @@ public class RandomNumberGenerator {
 
     public static String generateRandomNumber() {
         Random random = new Random();
-        // Generar un número aleatorio entre 1 y el valor máximo de Integer
-        int randomNumber = random.nextInt(MAX_INTEGER_VALUE) + 1;
-        return String.valueOf(randomNumber);
+        int firstDigit = random.nextInt(9) + 1;
+        int remainingDigits = random.nextInt(1_000_000_000); // Hasta 9 dígitos
+        String randomNumber = firstDigit + String.format("%09d", remainingDigits);
+        return randomNumber;
     }
 }

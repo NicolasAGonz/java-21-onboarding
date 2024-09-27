@@ -1,15 +1,19 @@
 package com.dev.java.MSTarjetas.kafka;
 
 
+import com.dev.java.MSTarjetas.service.TarjetaService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class KafkaConsumer {
 
     private static final Logger logger = (Logger) LoggerFactory.getLogger(KafkaConsumer.class);
+    private  final TarjetaService tarjetaService;
 
     @KafkaListener(topics = "healthCheckTopic", groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerHealthCheckFactory")
     public void consumeStringMessage(String message) {
@@ -21,6 +25,7 @@ public class KafkaConsumer {
     public void consumeCardCreation(String newAccountNumCue){
         logger.info("SE RECIBIO UN NUEVO NUMERO DE CUENTA: " + newAccountNumCue);
         logger.info("SE PROCEDERA A DAR DE ALTA LAS TARJETAS ASOCIADAS");
+        tarjetaService.crearTarjeta(newAccountNumCue);
 
     }
 

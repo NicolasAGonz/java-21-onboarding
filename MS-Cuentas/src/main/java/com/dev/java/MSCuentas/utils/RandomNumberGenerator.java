@@ -4,13 +4,18 @@ import java.util.Random;
 
 public class RandomNumberGenerator {
 
-    private static final int MAX_INTEGER_VALUE = Integer.MAX_VALUE;
-
     public static String generateRandomNumber() {
+        String fixedPart = "1";
         Random random = new Random();
-        int firstDigit = random.nextInt(9) + 1;
-        int remainingDigits = random.nextInt(1_000_000_000); // Hasta 9 dígitos
-        String randomNumber = firstDigit + String.format("%09d", remainingDigits);
-        return randomNumber;
+
+        StringBuilder randomPart = new StringBuilder();
+
+        // Generar los 9 dígitos restantes aleatoriamente
+        for (int i = 0; i < 9; i++) {
+            int digit = random.nextInt(10);
+            randomPart.append(digit);
+        }
+
+        return fixedPart + randomPart;
     }
 }

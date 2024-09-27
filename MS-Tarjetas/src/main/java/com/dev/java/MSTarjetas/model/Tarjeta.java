@@ -1,14 +1,14 @@
 package com.dev.java.MSTarjetas.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 @Entity
 @Table(name = "tarjetas")
 @Getter
 @Setter
+@Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tarjeta {

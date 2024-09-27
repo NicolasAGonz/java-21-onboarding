@@ -48,7 +48,6 @@ public class CuentaService {
 
                 //String cardType = dto.getProducto().getTarjeta();
                 //String cardCurrency = account.getCodigoMoneda().getSimbolo();
-                //TODO: Averiguar como impacta que la tarjeta sea de un tipo u otro
 
                 kafkaProducer.sendNewAccountCreatedMessage(numcue);
                 }
